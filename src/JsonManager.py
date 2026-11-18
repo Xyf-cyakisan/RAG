@@ -8,7 +8,6 @@ class JsonManager:
     @staticmethod
     def write_in_json(file_name: str, datas: list[BaseModel] | BaseModel
                       ) -> None:
-        print(file_name)
         file = Path(file_name)
         file.parent.mkdir(parents=True, exist_ok=True)
         if isinstance(datas, list):
