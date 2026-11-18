@@ -39,12 +39,12 @@ class Chunker:
         chunks = []
         text = file.read_text()
         len_text = len(text)
-        for start in range(0, len_text, max_chunk_size):
-            start = start - (max_chunk_size / 40) if start != 0 else 0
+        start = 0
+        while True:
             if start + max_chunk_size - 1 >= len_text:
                 end = len_text - 1
-            elif text[start:start + max_chunk_size - 1].rfind(".") != -1:
-                end = text[start:start + max_chunk_size - 1].rfind(".") # Tu essayais de refaire le chunker pour qu'il coupe a la derniere phrase et qu'il overlap dans le chunk apres les 50 derniers caracteres du precendent chunk
+            elif text[start:start + max_chunk_size].rfind(".") != -1:
+                end = start + text[start:start + max_chunk_size].rfind(".")
             else:
                 end = start + max_chunk_size - 1
             chunks.append(
@@ -52,6 +52,10 @@ class Chunker:
                               first_character_index=start,
                               last_character_index=end)
             )
+            if end == len_text - 1:
+                break
+            start += max_chunk_size
+            start = start - (max_chunk_size // 40)
         return chunks
 
     @staticmethod
