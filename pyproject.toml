@@ -8,4 +8,6 @@ dependencies = [
     "fire",
     "bm25s",
     "tqdm",
+    "flake8",
+    "mypy"
 ]

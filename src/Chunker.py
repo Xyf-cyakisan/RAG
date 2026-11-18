@@ -17,7 +17,9 @@ class Chunker:
     @staticmethod
     def get_chunks(max_chunk_size: int) -> list[MinimalSource]:
         chunks: list[MinimalSource] = []
-        for path in tqdm.tqdm([path for path in Path("data/raw").rglob("*") if path.name.endswith((".py", ".md", ".txt"))], desc="Gautier est trop beau", unit="file"):
+        for path in tqdm.tqdm([path for path in Path("data/raw").rglob("*") if
+                               path.name.endswith((".py", ".md", ".txt"))],
+                              desc="Chunking all data files", unit="file"):
             chunks.extend(Chunker.__get_file_cutter(
                 Chunker.__get_file_type(path))(
                     path, max_chunk_size))
@@ -34,19 +36,23 @@ class Chunker:
 
     @staticmethod
     def __cut_file(file: Path, max_chunk_size: int) -> list[MinimalSource]:
-        cut = []
-        start = 0
-        end = 0
-        file_end = len(file.read_text())
-        while end != file_end:
-            end += max_chunk_size
-            if end > file_end:
-                end = file_end
-            cut.append(MinimalSource(file_path=file.as_posix(),
-                                     first_character_index=start,
-                                     last_character_index=end))
-            start = end
-        return cut
+        chunks = []
+        text = file.read_text()
+        len_text = len(text)
+        for start in range(0, len_text, max_chunk_size):
+            start = start - (max_chunk_size / 40) if start != 0 else 0
+            if start + max_chunk_size - 1 >= len_text:
+                end = len_text - 1
+            elif text[start:start + max_chunk_size - 1].rfind(".") != -1:
+                end = text[start:start + max_chunk_size - 1].rfind(".") # Tu essayais de refaire le chunker pour qu'il coupe a la derniere phrase et qu'il overlap dans le chunk apres les 50 derniers caracteres du precendent chunk
+            else:
+                end = start + max_chunk_size - 1
+            chunks.append(
+                MinimalSource(file_path=file.as_posix(),
+                              first_character_index=start,
+                              last_character_index=end)
+            )
+        return chunks
 
     @staticmethod
     def __cut_python_file(file: Path, max_chunk_size: int
@@ -54,29 +60,27 @@ class Chunker:
         source = file.read_text()
         tree = ast.parse(source, filename=str(file))
 
-        chunks: list[str] = []
-        length = [len(line) for line in source.splitlines(True)]
-        length = [0] + length
-        for node in ast.iter_child_nodes(tree):
-            if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
-                chunk = ast.get_source_segment(source, node)
-                if chunk:
-                    if len(chunk) > max_chunk_size:
-                        start = 0
-                        end = 0
-                        file_end = len(chunk)
-                        while end != file_end:
-                            end += max_chunk_size
-                            if end > file_end:
-                                end = file_end
-                            chunks.append(MinimalSource(file_path=file.as_posix(),
-                                                        first_character_index=start,
-                                                        last_character_index=end))
-                            start = end
+        chunks: list[MinimalSource] = []
+        length = [0]
+        for line in source.splitlines(keepends=True):
+            length.append(length[-1] + len(line))
+        for node in tree.body:
+            if isinstance(node, (ast.FunctionDef, ast.ClassDef,
+                                 ast.AsyncFunctionDef)):
+                first_line = node.lineno
+                if node.decorator_list:
+                    first_line = node.decorator_list[0].lineno
+                end_line = node.end_lineno
+                start = length[first_line - 1]
+                end = length[end_line]
+                for chunk_s in range(start, end, max_chunk_size):
+                    if (chunk_s + max_chunk_size - 1) >= end:
+                        chunk_e = end
                     else:
-                        chunks.append(MinimalSource(
-                            file_path=file.as_posix(),
-                            first_character_index=length[node.lineno - 1] + 1,
-                            last_character_index=length[node.end_lineno - 1] + 1
-                        ))
+                        chunk_e = chunk_s + max_chunk_size
+                    chunks.append(MinimalSource(
+                        file_path=file.as_posix(),
+                        first_character_index=chunk_s,
+                        last_character_index=chunk_e)
+                                                )
         return chunks
