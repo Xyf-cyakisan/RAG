@@ -5,6 +5,7 @@ from .data_models import (MinimalAnswer, MinimalSource,
                           StudentSearchResults, StudentSearchResultsAndAnswer)
 from pathlib import Path
 from .Researcher import Researcher
+from transformers.utils import logging
 
 
 class Answerer:
@@ -19,7 +20,7 @@ class Answerer:
         return tokenizer, llm
 
     @staticmethod
-    def get_answer(query: str, sources: list[MinimalSource],
+    def get_answer(question_id: str, query: str, sources: list[MinimalSource],
                    text_sources: list[str], tokenizer: AutoTokenizer,
                    model: AutoModelForCausalLM) -> MinimalAnswer:
         context = "\n\n".join(text_sources)
@@ -61,7 +62,7 @@ class Answerer:
             return_full_text=False,
             add_special_tokens=False
         )
-        return MinimalAnswer(question_id="None", question=query,
+        return MinimalAnswer(question_id=question_id, question=query,
                              retrieved_sources=sources,
                              answer=str(result[0]["generated_text"].strip()),)
 
@@ -74,8 +75,9 @@ class Answerer:
             dataset_path.read_text(encoding="utf-8")
         )
         minimal_answers = []
+        logging.disable_progress_bar()
         tokenizer, llm = Answerer.get_tokenizer_and_llm()
-        print("\033c")
+        og_chunks = chunks
         for question in tqdm.tqdm(to_answer.search_results,
                                   desc="Answering questions",
                                   unit="question"):
@@ -92,8 +94,10 @@ class Answerer:
                 )[source.first_character_index:source.last_character_index + 1]
                 )
             minimal_answers.append(
-                Answerer.get_answer(query, chunks, text_sources,
+                Answerer.get_answer(question.question_id, query,
+                                    chunks, text_sources,
                                     tokenizer, llm)
             )
+            chunks = og_chunks
         return StudentSearchResultsAndAnswer(search_results=minimal_answers,
                                              k=to_answer.k)

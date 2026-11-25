@@ -79,10 +79,10 @@ class RAGApplication:
             text_sources.append(Path(source.file_path).read_text(
             )[source.first_character_index: source.last_character_index + 1])
         tokenizer, llm = Answerer.get_tokenizer_and_llm()
-        answer = Answerer.get_answer(query, best_chunks,
+        answer = Answerer.get_answer("None", query, best_chunks,
                                      text_sources, tokenizer, llm)
         JsonManager.write_in_json(
-            "data/output/search_results_and_answers/single_query.json",
+            "data/output/search_results_and_answer/single_query.json",
             answer)
         return answer.answer
 

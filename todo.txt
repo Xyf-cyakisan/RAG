@@ -4,6 +4,7 @@ mypy flake8
 mypy strict
 tout retester
 nettoyer le code
+verifier que la structure du projet soit de la poo propre
 comprendre proprement la pipeline dans les details
 readme
 mets tout en anglais (nom de fonction)
