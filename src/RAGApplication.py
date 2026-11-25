@@ -1,4 +1,5 @@
 from pathlib import Path
+from .Answerer import Answerer
 from .data_models import MinimalSearchResults
 from .Researcher import Researcher
 from .Chunker import Chunker
@@ -55,8 +56,25 @@ class RAGApplication:
         )
 
     @staticmethod
-    def answer(k: int = 5) -> None:
-        ...
+    def answer(query: str, k: int = 5) -> None:
+        if query == "":
+            raise ValueError("Query must be a defined non empty string.")
+        retriever = bm25s.BM25()
+        chunks = JsonManager.get_indices()
+        token_chunks = [
+            Researcher.tokenizer_code_avancé(text)
+            for text in Researcher.get_txt_chunks(chunks)
+        ]
+        retriever.index(token_chunks)
+        output = Researcher.search(
+            query,
+            retriever,
+            chunks,
+            k
+        )
+        JsonManager.write_in_json(
+            "data/output/search_results_and_answers/single_query.json",
+            Answerer.get_answer(query, output))
 
     @staticmethod
     def answer_dataset(

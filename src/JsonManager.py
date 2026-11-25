@@ -24,9 +24,12 @@ class JsonManager:
             with open(
                 "data/processed/indices.json", encoding="utf-8"
             ) as indice_file:
-                chunks: list[MinimalSource] = json.load(indice_file)
-                return chunks
+                return [MinimalSource(**chunk)
+                        for chunk in json.load(indice_file)]
         except FileNotFoundError:
             raise FileNotFoundError("Warning, 'data/processed/indices.json'"
                                     " file not found, please run 'make index' "
                                     "or 'python3 -m index' commands first.")
+        except KeyError:
+            raise KeyError("Warning, 'data/processed/indices.json' all "
+                           "keys not found.")

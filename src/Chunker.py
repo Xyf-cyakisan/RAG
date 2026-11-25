@@ -40,11 +40,14 @@ class Chunker:
         text = file.read_text()
         len_text = len(text)
         start = 0
+        last_end = None
         while True:
             if start + max_chunk_size - 1 >= len_text:
-                end = len_text - 1
+                end = len_text
             elif text[start:start + max_chunk_size].rfind(".") != -1:
                 end = start + text[start:start + max_chunk_size].rfind(".")
+                if last_end == end:
+                    end = start + max_chunk_size - 1
             else:
                 end = start + max_chunk_size - 1
             chunks.append(
@@ -52,10 +55,11 @@ class Chunker:
                               first_character_index=start,
                               last_character_index=end)
             )
-            if end == len_text - 1:
+            if end == len_text:
                 break
-            start += max_chunk_size
-            start = start - (max_chunk_size // 40)
+            start = (end + 1) - (max_chunk_size // 40 if max_chunk_size //
+                                 40 != 0 else 0)
+            last_end = end
         return chunks
 
     @staticmethod
@@ -63,7 +67,6 @@ class Chunker:
                           ) -> list[MinimalSource]:
         source = file.read_text()
         tree = ast.parse(source, filename=str(file))
-
         chunks: list[MinimalSource] = []
         length = [0]
         for line in source.splitlines(keepends=True):
@@ -81,7 +84,7 @@ class Chunker:
                     if (chunk_s + max_chunk_size - 1) >= end:
                         chunk_e = end
                     else:
-                        chunk_e = chunk_s + max_chunk_size
+                        chunk_e = chunk_s + max_chunk_size - 1
                     chunks.append(MinimalSource(
                         file_path=file.as_posix(),
                         first_character_index=chunk_s,
