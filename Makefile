@@ -24,3 +24,28 @@ answer:
 
 answer_dataset:
 	uv run python3 -m src answer_dataset  --student_search_results_path "$(STUDENT_SEARCH_RESULTS_PATH)" --save_directory "$(SAVE_A_DIRECTORY)"
+
+clean:
+	rm -rf */*/*/__pycache__
+	rm -rf */*/__pycache__
+	rm -rf */__pycache__
+	rm -rf __pycache__
+	rm -rf */*/*/.mypy_cache
+	rm -rf */*/.mypy_cache
+	rm -rf */.mypy_cache
+	rm -rf .mypy_cache
+	rm -rf */*/*/.pytest_cache
+	rm -rf */*/.pytest_cache
+	rm -rf */.pytest_cache
+	rm -rf .pytest_cache
+
+fclean: clean
+	rm -rf .venv
+	rm -rf uv.lock
+	uv cache clean
+
+lint:
+	uv run python -m flake8 src && printf '\033[1;32mFlake8 all good !\033[0m\n'; uv run python -m mypy src --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs --follow-imports=silent
+
+lint-strict:
+	uv run python -m flake8 src && printf '\033[1;32mFlake8 all good !\033[0m\n'; uv run python -m mypy src --strict --follow-imports=silent
