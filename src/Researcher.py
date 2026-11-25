@@ -99,7 +99,7 @@ class Researcher:
 
         for question in tqdm(
             dataset.rag_questions,
-            desc="Recherche des sources",
+            desc="Researching sources",
             unit="question",
         ):
             sources = Researcher.search(
