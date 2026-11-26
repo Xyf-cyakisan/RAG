@@ -117,9 +117,14 @@ class RAGApplication:
     def evaluate(
         student_search_results_path: Path, dataset_path: Path
     ) -> None:
+        student_search_results_path = Path(student_search_results_path)
+        dataset_path = Path(dataset_path)
         student_search_results = StudentSearchResults.model_validate_json(
             student_search_results_path.read_text(encoding="utf-8"))
         given_dataset = RagDataset.model_validate_json(
             dataset_path.read_text(encoding="utf-8")
         )
-        Evaluator.evaluate_sources(student_search_results, given_dataset)
+        evaluation = Evaluator.evaluate_sources(student_search_results,
+                                                given_dataset)
+        for k, percentage in zip([1, 3, 5, 10], evaluation):
+            print(f"Recall@{k}: {percentage}")

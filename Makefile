@@ -3,6 +3,7 @@
 MAX_CHUNK_SIZE = 2000
 K = 5
 DATASET_PATH = "data/datasets/UnansweredQuestions/dataset_docs_public.json"
+DATASET_E_PATH = "data/datasets/AnsweredQuestions/dataset_docs_public.json"
 SAVE_DIRECTORY = "data/output/search_results/UnansweredQuestions"
 STUDENT_SEARCH_RESULTS_PATH = "data/output/search_results/UnansweredQuestions/dataset_docs_public.json"
 SAVE_A_DIRECTORY = "data/output/search_results_and_answer/"
@@ -24,6 +25,9 @@ answer:
 
 answer_dataset:
 	uv run python3 -m src answer_dataset  --student_search_results_path "$(STUDENT_SEARCH_RESULTS_PATH)" --save_directory "$(SAVE_A_DIRECTORY)"
+
+evaluate:
+	uv run python3 -m src evaluate  --student_search_results_path "$(STUDENT_SEARCH_RESULTS_PATH)" --dataset_path "$(DATASET_E_PATH)"
 
 clean:
 	rm -rf */*/*/__pycache__
