@@ -1,3 +1,4 @@
+Accélérer evaluate notamment en sortant direct si cross = true
 Rajoute un saved to apres la completion d'une operation pour dire ou ca a ete sauvegarde et si possible faire un lien pour que des qu'il clique dessus ca renvoie dans le fichier
 transferer toutes les lectures de fichier dans JsonManager
 gestion d'erreur (K=0 tout ca tout ca)
