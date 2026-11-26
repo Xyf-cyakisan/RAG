@@ -1,6 +1,7 @@
 from pathlib import Path
+from .Evaluator import Evaluator
 from .Answerer import Answerer
-from .data_models import MinimalSearchResults
+from .data_models import MinimalSearchResults, RagDataset, StudentSearchResults
 from .Researcher import Researcher
 from .Chunker import Chunker
 from .JsonManager import JsonManager
@@ -116,4 +117,9 @@ class RAGApplication:
     def evaluate(
         student_search_results_path: Path, dataset_path: Path
     ) -> None:
-        ...
+        student_search_results = StudentSearchResults.model_validate_json(
+            student_search_results_path.read_text(encoding="utf-8"))
+        given_dataset = RagDataset.model_validate_json(
+            dataset_path.read_text(encoding="utf-8")
+        )
+        Evaluator.evaluate_sources(student_search_results, given_dataset)

@@ -1,10 +1,12 @@
 Rajoute un saved to apres la completion d'une operation pour dire ou ca a ete sauvegarde et si possible faire un lien pour que des qu'il clique dessus ca renvoie dans le fichier
+transferer toutes les lectures de fichier dans JsonManager
 gestion d'erreur
 mypy flake8
 mypy strict
 tout retester
 nettoyer le code
 verifier que la structure du projet soit de la poo propre
+encapsulation
 comprendre proprement la pipeline dans les details
 readme
 mets tout en anglais (nom de fonction)
